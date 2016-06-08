@@ -229,6 +229,36 @@ class FilesystemManager implements FactoryContract
 
         return $store->getContainer($config['container']);
     }
+    
+     /**
+     * Create an instance of the Selectel driver.
+     *
+     * @param  array  $config
+     * @return \Illuminate\Contracts\Filesystem\Cloud
+     */
+    public function createSelectelDriver(array $config)
+    {
+        $client = new OpenStack($config['endpoint'], [
+            'username' => $config['username'], 'password' => $config['key'],
+        ]);
+
+        return $this->adapt($this->createFlysystem(
+            new RackspaceAdapter($this->getSelectelContainer($client, $config)), $config
+        ));
+    }
+
+    /**
+     * Get the Selectel Cloud Files container.
+     *
+     */
+    protected function getSelectelContainer(OpenStack $client, array $config)
+    {
+
+        $store = $client->objectStoreService('swift', 'Common');
+        $container = $store->getContainer($config['container']);
+
+        return $container;
+    }
 
     /**
      * Create a Flysystem instance with the given adapter.
